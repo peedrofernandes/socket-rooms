@@ -26,6 +26,7 @@ export interface ChatRepository {
   generateId: GenerateId
 
   selectAllGivenUser: (user: User) => Promise<Chat[]> | Chat[]
+  searchForExistingChat: (user1: User, user2: User) => Promise<Chat> | Chat
 }
 
 export interface MessageRepository {

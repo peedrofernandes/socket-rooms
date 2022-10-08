@@ -1,4 +1,5 @@
 import { Chat, User } from "../../domain/entitites"
+import { ExistingChatError } from "../errors"
 import { ChatRepository, UserRepository } from "../repositories"
 
 type StartChatParams = {
@@ -8,6 +9,10 @@ type StartChatParams = {
 }
 export async function startChat(params: StartChatParams) {
   const { starterUser, targetUser, chatRepository } = params
+
+  const existingChat = await chatRepository.searchForExistingChat(starterUser, targetUser)
+  if (existingChat)
+    throw ExistingChatError(starterUser, targetUser)
 
   const chat: Chat = {
     id: await chatRepository.generateId(),

@@ -1,4 +1,5 @@
 import { Chat, Message, User } from "../../domain/entitites"
+import { MaximumMessagesError } from "../errors"
 import { MessageRepository } from "../repositories"
 
 
@@ -11,8 +12,12 @@ type SendMessageParams = {
   }
   messageRepository: MessageRepository
 }
-async function sendMessage(params: SendMessageParams) {
+export async function sendMessage(params: SendMessageParams) {
   const { messageAttributes, messageRepository } = params
+
+  if (messageAttributes.chat.qtyMessages >= 1000)
+    throw MaximumMessagesError()
+
   const message: Message = {
     id: await messageRepository.generateId(),
     ...messageAttributes,
@@ -30,7 +35,7 @@ type ReceiveAllMessagesParams = {
   receiver: User
   messageRepository: MessageRepository
 }
-async function receiveAllMessages(params: ReceiveAllMessagesParams) {
+export async function receiveAllMessages(params: ReceiveAllMessagesParams) {
   const { chat, receiver, messageRepository } = params
   await messageRepository.setAsReceived(chat, receiver)
   return true
@@ -42,15 +47,8 @@ type ViewMessagesParams = {
   viewer: User
   messageRepository: MessageRepository
 }
-async function viewMessages(params: ViewMessagesParams) {
+export async function viewMessages(params: ViewMessagesParams) {
   const { chat, viewer, messageRepository } = params
   await messageRepository.setAsViewed(chat, viewer)
   return true
-}
-
-
-export default {
-  sendMessage,
-  receiveAllMessages,
-  viewMessages
 }
