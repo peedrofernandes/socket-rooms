@@ -2,6 +2,7 @@ export type User = {
   fullName: string
   alias: string
   email: string
+  hashedPassword: string
   createdAt: Date
 }
 
