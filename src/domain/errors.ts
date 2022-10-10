@@ -18,3 +18,10 @@ export function TooManyMessagesError(chat: Chat): Error {
     description: `The chat ${chat.id} exceeded the maximum amount of messages.`
   }
 }
+
+export function UnauthorizedError(user: User): Error {
+  return {
+    name: "Unauthorized!",
+    description: `User ${user.alias} is not authorized.`
+  }
+}

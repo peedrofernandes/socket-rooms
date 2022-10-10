@@ -1,5 +1,5 @@
 import { Chat, Message, User } from "./entities"
-import { ExistingChatError, TooManyMessagesError } from "./errors"
+import { ExistingChatError, TooManyMessagesError, UnauthorizedError } from "./errors"
 import { ChatRepository, MessageRepository, UserRepository } from "./repositories"
 
 
@@ -7,23 +7,24 @@ type VerifyUserAuthorizationRule = (params: {
   user: User
   credentials: any
   verifyAuthorizationMethod: (user: User, credentials: any) => Promise<boolean> | boolean
-}) => Promise<boolean>
+}) => Promise<void>
 
 export const VerifyUserAuthorization: VerifyUserAuthorizationRule = async (params) => {
   const { user, credentials, verifyAuthorizationMethod } = params
   const result = await verifyAuthorizationMethod(user, credentials)
-  return result
+  if (!result) throw UnauthorizedError(user)
 }
 
 
 type ReceivePendingMessagesRule = (params: {
   user: User
+  chats: Chat[]
   messageRepository: MessageRepository
 }) => Promise<Message[]>
 
 export const ReceivePendingMessages: ReceivePendingMessagesRule = async (params) => {
-  const { user, messageRepository } = params
-  const messages = await messageRepository.getPending(user)
+  const { user, chats, messageRepository } = params
+  const messages = await messageRepository.getPending(user, chats)
   return messages
 }
 
@@ -55,12 +56,14 @@ export const ReceiveOwnChats: ReceiveOwnChatsRule = async (params) => {
 type VisualizePendingMessagesRule = (params: {
   user: User
   chat: Chat
+  date: Date
   messageRepository: MessageRepository
-}) => Promise<void>
+}) => Promise<Message[]>
 
 export const VisualizePendingMessages: VisualizePendingMessagesRule = async (params) => {
-  const { user, chat, messageRepository } = params
-  await messageRepository.viewMessages(user, chat)
+  const { user, chat, date, messageRepository } = params
+  const messages = await messageRepository.viewMessages(user, chat, date)
+  return messages
 }
 
 
@@ -89,22 +92,24 @@ export const NoMoreThan1000Messages: NoMoreThan1000MessagesRule = async (params)
 
 
 type MarkAsSentRule = (params: {
-  message: Message
+  data: Message | Message[]
+  date: Date
   messageRepository: MessageRepository
 }) => Promise<void>
 
 export const MarkAsSent: MarkAsSentRule = async (params) => {
-  const { message, messageRepository } = params
-  await messageRepository.updateAsSent(message)
+  const { data, date, messageRepository } = params
+  await messageRepository.updateAsSent(data, date)
 }
 
 
 type MarkAsReceivedRule = (params: {
-  message: Message
+  data: Message | Message[]
+  date: Date
   messageRepository: MessageRepository
 }) => Promise<void>
 
 export const MarkAsReceived: MarkAsReceivedRule = async (params) => {
-  const { message, messageRepository } = params
-  await messageRepository.updateAsReceived(message)
+  const { data, date, messageRepository } = params
+  await messageRepository.updateAsReceived(data, date)
 }

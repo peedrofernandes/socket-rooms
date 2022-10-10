@@ -5,7 +5,7 @@ type Create <T> = (t: T) => Promise<void> | void
 type Get <T> = (id: string | number) => Promise<T> | T
 type Update<T> = (t: T) => Promise<void> | void
 type Remove<T> = (t: T) => Promise<void> | void 
-type GenerateId = () => string
+type GenerateId = () => Promise<string> | string
 
 export type UserRepository = {
   create: Create<User>
@@ -24,10 +24,10 @@ export type MessageRepository = {
   delete: Remove<Message>
   generateId: GenerateId
 
-  getPending: (user: User) => Promise<Message[]> | Message[]
-  viewMessages: (user: User, chat: Chat) => Promise<void> | void
-  updateAsSent: (message: Message) => Promise<void> | void
-  updateAsReceived: (message: Message) => Promise<void> | void
+  getPending: (user: User, chats: Chat[]) => Promise<Message[]> | Message[]
+  viewMessages: (user: User, chat: Chat, date: Date) => Promise<Message[]> | Message[]
+  updateAsSent: (data: Message | Message[], date: Date) => Promise<Message | Message[]> | Message | Message[]
+  updateAsReceived: (data: Message | Message[], date: Date) => Promise<Message | Message[]> | Message | Message[]
 }
 
 export type ChatRepository = {
