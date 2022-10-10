@@ -1,4 +1,5 @@
 export type User = {
+  id: string
   fullName: string
   alias: string
   email: string
@@ -7,6 +8,7 @@ export type User = {
 }
 
 export type Chat = {
+  id: string
   user1: User
   user2: User
   messages: Message[]
@@ -14,6 +16,7 @@ export type Chat = {
 }
 
 export type Message = {
+  id: string
   sender: User
   receiver: User
   chat: Chat
@@ -23,6 +26,7 @@ export type Message = {
 }
 
 export type GlobalNetwork = {
+  id: string
   totalUsers: User[]
   totalChats: Chat[]
   totalMessages: Message[]
