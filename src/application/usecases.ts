@@ -3,6 +3,7 @@ import { ChatRepository, MessageRepository, UserRepository } from "../domain/rep
 import { MarkAsReceived, MarkAsSent, ReceiveOwnChats, ReceivePendingMessages, ReceiveUserList, VerifyExistingChat, VerifyUserAuthorization } from "../domain/rules"
 
 
+
 type ConnectToNetworkUseCase = (params: {
   user: User
   connectionDate: Date
@@ -38,15 +39,21 @@ export const ConnectToNetwork: ConnectToNetworkUseCase = async (params) => {
 }
 
 
+
 type StartChatUseCase = (params: {
+  authorizationParams: {
+    credentials: any
+    verifyAuthorizationMethod: (user: User, credentials: any) => Promise<boolean> | boolean
+  }
   starter: User
   target: User
   chatRepository: ChatRepository
 }) => Promise<Chat>
 export const StartChat: StartChatUseCase = async (params) => {
-  const { starter, target, chatRepository } = params
+  const { authorizationParams, starter, target, chatRepository } = params
 
-  VerifyExistingChat({ user1: starter, user2: target, chatRepository })
+  await VerifyUserAuthorization({ user: starter, ...authorizationParams })
+  await VerifyExistingChat({ user1: starter, user2: target, chatRepository })
 
   const newChat: Chat = {
     id: await chatRepository.generateId(),
@@ -61,16 +68,21 @@ export const StartChat: StartChatUseCase = async (params) => {
 }
 
 
+
 type SendMessageUseCase = (params: {
+  authorizationParams: {
+    credentials: any
+    verifyAuthorizationMethod: (user: User, credentials: any) => Promise<boolean> | boolean
+  }
   sender: User
   receiver: User
   chat: Chat
   messageRepository: MessageRepository
   chatRepository: ChatRepository
 }) => Promise<void>
-
 export const SendMessage: SendMessageUseCase = async (params) => {
-  const { sender, receiver, chat, messageRepository, chatRepository } = params
+  const { authorizationParams, sender, receiver, chat, messageRepository, chatRepository } = params
+  await VerifyUserAuthorization({ user: sender, ...authorizationParams })
 
   const newMessage: Message = {
     id: await messageRepository.generateId(),
