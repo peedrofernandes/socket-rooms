@@ -19,7 +19,7 @@ export type Message = {
   sender: User
   receiver: User
   chat: Chat
-  sentAt: Date
-  receivedAt: Date
-  seenAt: Date
+  sentAt?: Date
+  receivedAt?: Date
+  seenAt?: Date
 }
